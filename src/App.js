@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./style.css";
 
 const CATEGORIES = [
@@ -46,6 +47,10 @@ const initialFacts = [
 ];
 
 function App() {
+  const [showForm, setShowForm] = useState(false);
+
+  const appTitle = "Today I Learned";
+
   return (
     <>
       <header className="header">
@@ -56,12 +61,17 @@ function App() {
             width="68"
             alt="Today I Learned Logo"
           />
-          <h1>Today I Learned</h1>
+          <h1>{appTitle}</h1>
         </div>
 
-        <button className="btn btn-large btn-open">Share a fact</button>
+        <button
+          className="btn btn-large btn-open"
+          onClick={() => setShowForm((s) => !s)}
+        >
+          {showForm ? "Close" : "Share a fact"}
+        </button>
       </header>
-      <NewFactForm />
+      {showForm ? <NewFactForm /> : null}
       <main className="main">
         <CategoryFilter />
         <FactList></FactList>
@@ -78,29 +88,36 @@ function CategoryFilter() {
   return (
     <aside>
       <ul>
-        <li className="category">
+        <li id="all" className="category">
           <button className="btn btn-all-categories">All</button>
         </li>
-        <li className="category">
-          <button
-            className="btn btn-category"
-            style={{ backgroundColor: "#3b82f6" }}
-          >
-            Technology
-          </button>
-        </li>
-        <li className="category">
-          <button
-            className="btn btn-category"
-            style={{ backgroundColor: "#16a34a" }}
-          >
-            Science
-          </button>
-        </li>
+        {CATEGORIES.map((cat) => (
+          <li id={cat.name} className="category">
+            <button
+              className="btn btn-category"
+              style={{ backgroundColor: cat.color }}
+            >
+              {cat.name}
+            </button>
+          </li>
+        ))}
       </ul>
     </aside>
   );
 }
+
+// function Category({ cat, id }) {
+//   return (
+//     <li id={id} className="category">
+//       <button
+//         className="btn btn-category"
+//         style={{ backgroundColor: cat.color }}
+//       >
+//         {cat.name}
+//       </button>
+//     </li>
+//   );
+// }
 
 function FactList() {
   const facts = initialFacts;
@@ -109,37 +126,43 @@ function FactList() {
     <section>
       <ul className="facts-list">
         {facts.map((fact) => (
-          <li key={fact.id} className="fact">
-            <p>
-              {fact.text}
-              <a
-                className="source"
-                href={fact.source}
-                target="_blank"
-                rel="noreferrer"
-              >
-                (Source)
-              </a>
-            </p>
-            <span
-              className="tag"
-              style={{
-                backgroundColor: CATEGORIES.find(
-                  (cat) => cat.name === fact.category
-                ).color,
-              }}
-            >
-              {fact.category}
-            </span>
-            <div className="vote-buttons">
-              <button>👍 {fact.votesInteresting}</button>
-              <button>🤯 {fact.votesMindblowing}</button>
-              <button>⛔️ {fact.votesFalse}</button>
-            </div>
-          </li>
+          <Fact key={fact.id} fact={fact} />
         ))}
       </ul>
+      <p>There are {facts.length} facts in the database. Add tour own!</p>
     </section>
+  );
+}
+
+function Fact({ fact }) {
+  return (
+    <li className="fact">
+      <p>
+        {fact.text}
+        <a
+          className="source"
+          href={fact.source}
+          target="_blank"
+          rel="noreferrer"
+        >
+          (Source)
+        </a>
+      </p>
+      <span
+        className="tag"
+        style={{
+          backgroundColor: CATEGORIES.find((cat) => cat.name === fact.category)
+            .color,
+        }}
+      >
+        {fact.category}
+      </span>
+      <div className="vote-buttons">
+        <button>👍 {fact.votesInteresting}</button>
+        <button>🤯 {fact.votesMindblowing}</button>
+        <button>⛔️ {fact.votesFalse}</button>
+      </div>
+    </li>
   );
 }
 
