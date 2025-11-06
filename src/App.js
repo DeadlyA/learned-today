@@ -48,14 +48,17 @@ const initialFacts = [
 
 function App() {
   const [showForm, setShowForm] = useState(false);
+  const [facts, setFacts] = useState(initialFacts);
 
   return (
     <>
       <Header showForm={showForm} setShowForm={setShowForm} />
-      {showForm ? <NewFactForm /> : null}
+      {showForm ? (
+        <NewFactForm setFacts={setFacts} setShowForm={setShowForm} />
+      ) : null}
       <main className="main">
         <CategoryFilter />
-        <FactList></FactList>
+        <FactList facts={facts} />
       </main>
     </>
   );
@@ -80,15 +83,51 @@ function Header({ setShowForm, showForm }) {
   );
 }
 
-function NewFactForm() {
+function isValidHttpUrl(string) {
+  let url;
+
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;
+  }
+
+  return url.protocol === "http:" || url.protocol === "https:";
+}
+
+function NewFactForm({ setFacts, setShowForm }) {
   const [text, setText] = useState("");
   const [source, setSource] = useState("");
   const [category, setCategory] = useState("");
   const textLength = text.length;
 
   function handleSubmit(e) {
+    // Prevent browser reload
     e.preventDefault();
-    console.log(text, source, category);
+
+    // Check if data is valid. If so, create a new fact
+
+    if (text && isValidHttpUrl(source) && category) {
+      // Create new fact obj
+      const newFact = {
+        id: Math.round(Math.random * 1000000),
+        text,
+        source,
+        category,
+        votesInteresting: 0,
+        votesMindblowing: 0,
+        votesFalse: 0,
+        createdIn: new Date().getFullYear(),
+      };
+      // Add fact do the UI
+      setFacts((facts) => [newFact, ...facts]);
+      // Reset form fields
+      setText("");
+      setSource("");
+      setCategory("");
+      // Close form
+      setShowForm((s) => !s);
+    }
   }
 
   return (
@@ -155,9 +194,7 @@ function CategoryFilter() {
 //   );
 // }
 
-function FactList() {
-  const facts = initialFacts;
-
+function FactList({ facts }) {
   return (
     <section>
       <ul className="facts-list">
