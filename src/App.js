@@ -18,6 +18,8 @@ function App() {
   const [facts, setFacts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentCat, setCurrentCat] = useState("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortByAsc, setSortByAsc] = useState(false);
 
   useEffect(
     function () {
@@ -29,7 +31,7 @@ function App() {
         if (currentCat !== "all") query = query.eq("category", currentCat);
 
         const { data: facts, error } = await query
-          .order("votesInteresting", { ascending: false })
+          .order([sortBy], { ascending: sortByAsc })
           .limit(1000);
 
         if (!error) setFacts(facts);
@@ -38,7 +40,7 @@ function App() {
       }
       getFacts();
     },
-    [currentCat]
+    [currentCat, sortBy, sortByAsc]
   );
 
   return (
@@ -52,7 +54,15 @@ function App() {
         {isLoading ? (
           <Loader />
         ) : (
-          <FactList facts={facts} setFacts={setFacts} />
+          <>
+            <FactSort
+              sortBy={sortBy}
+              sortByAsc={sortByAsc}
+              setSortBy={setSortBy}
+              setSortByAsc={setSortByAsc}
+            />
+            <FactList facts={facts} setFacts={setFacts} />
+          </>
         )}
       </main>
     </>
@@ -213,6 +223,25 @@ function CategoryFilter({ setCurrentCat }) {
 //     </li>
 //   );
 // }
+
+function FactSort({ sortBy, sortByAsc, setSortBy, setSortByAsc }) {
+  return (
+    <form className="fact-sort">
+      <select
+        onChange={(e) => {
+          setSortBy(e.target.value.split(" ")[0]);
+          setSortByAsc(e.target.value.split(" ")[1] === "false");
+        }}
+      >
+        <option value="">Sort by:</option>
+        <option value="created_at false">Date ↑</option>
+        <option value="created_at true">Date ↓</option>
+        <option value="votesInteresting false">Votes ↑</option>
+        <option value="votesInteresting true">Votes ↓</option>
+      </select>
+    </form>
+  );
+}
 
 function FactList({ facts, setFacts }) {
   if (facts.length === 0) {
